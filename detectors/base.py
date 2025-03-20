@@ -101,58 +101,67 @@ class BaseAnomalyDetector:
         
         return evaluation
     
-    def save_model(self, filename=None):
+    def save_model(self, filepath=None):
         """
-        Сохранение модели детектора в файл.
+        Сохранение модели в файл.
+        
+        Parameters:
+        -----------
+        filepath : str, optional
+            Путь для сохранения модели. Если None, используется стандартный путь.
         """
         if self.model is None:
             raise ValueError("Модель не обучена и не может быть сохранена.")
-        
-        # Если имя файла не указано, генерируем его из типа модели и времени
-        if filename is None:
+            
+        if filepath is None:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            model_type = self.__class__.__name__
-            filename = f"{model_type}_{timestamp}.joblib"
+            filepath = os.path.join(self.model_dir, f"{self.__class__.__name__}_{timestamp}.joblib")
         
-        # Полный путь к файлу
-        filepath = os.path.join(self.model_dir, filename)
-        
-        # Создаем словарь с моделью и метаданными
-        model_data = {
+        # Создаем словарь с компонентами модели
+        model_dict = {
             'model': self.model,
             'scaler': self.scaler,
             'features': self.features,
             'training_summary': self.training_summary,
             'model_type': self.__class__.__name__,
-            'timestamp': datetime.datetime.now().isoformat()
+            'saved_at': datetime.datetime.now().isoformat()
         }
         
         # Сохраняем в файл
-        joblib.dump(model_data, filepath)
+        joblib.dump(model_dict, filepath)
         print(f"Модель сохранена в {filepath}")
         
         return filepath
     
     def load_model(self, filepath):
         """
-        Загрузка модели детектора из файла.
-        """
-        # Загружаем данные из файла
-        model_data = joblib.load(filepath)
+        Загрузка модели из файла.
         
-        # Проверяем, что тип модели совпадает
-        if model_data['model_type'] != self.__class__.__name__:
-            print(f"Предупреждение: загружаемая модель типа {model_data['model_type']}, "
-                  f"но текущий детектор типа {self.__class__.__name__}")
+        Parameters:
+        -----------
+        filepath : str
+            Путь к сохраненной модели
+            
+        Returns:
+        --------
+        self
+            Загруженный детектор
+        """
+        # Загружаем словарь с компонентами модели
+        model_dict = joblib.load(filepath)
+        
+        # Проверяем совместимость
+        if model_dict['model_type'] != self.__class__.__name__:
+            print(f"Предупреждение: тип модели в файле ({model_dict['model_type']}) "
+                  f"отличается от текущего класса ({self.__class__.__name__})")
         
         # Загружаем компоненты
-        self.model = model_data['model']
-        self.scaler = model_data['scaler']
-        self.features = model_data['features']
-        self.training_summary = model_data['training_summary']
+        self.model = model_dict['model']
+        self.scaler = model_dict['scaler']
+        self.features = model_dict['features']
+        self.training_summary = model_dict.get('training_summary', {})
         
         print(f"Модель загружена из {filepath}")
-        print(f"Тип модели: {model_data['model_type']}")
-        print(f"Дата создания: {model_data['timestamp']}")
+        print(f"Модель была сохранена: {model_dict.get('saved_at', 'время сохранения неизвестно')}")
         
         return self
