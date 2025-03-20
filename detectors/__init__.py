@@ -1,3 +1,8 @@
+"""Модуль detectors.
+
+Этот модуль содержит классы и функции для обнаружения аномалий и атак различными методами.
+"""
+
 # Инициализационный файл для модуля detectors
 from intellectshield.detectors.base import BaseAnomalyDetector
 from intellectshield.detectors.isolation_forest import IsolationForestDetector
