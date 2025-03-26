@@ -86,7 +86,7 @@ def test_ensemble_detector(base_results, ensemble_method="weighted_average"):
     dict
         Результаты тестирования ансамблевого детектора
     """
-    from intellectshield.detectors.ensemble import EnsembleAnomalyDetector
+    from intellectshield.detectors.ensemble.ensemble import EnsembleAnomalyDetector
     
     print(f"\nТестирование ансамблевого детектора с методом {ensemble_method}:")
     
